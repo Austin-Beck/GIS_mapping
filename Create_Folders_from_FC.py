@@ -1,8 +1,17 @@
+# Created by Austin Beck | austin.beck@aecom.com
+# Intended to create folders/directories for every feature in a feature class/shapefile.
+# The user input field's attributes will be used to name the folders/directories
+# If a feature's attribute is Null or '', a folder will not be created
+
 #------------USER INPUTS-----------------------------------------------------
+
 input_feature_class = r''# Input feature class filepath
 field_name = r'' # Field name within feature class used to generate folder name
 output_folder = r'' # Output base directory for new folders
+
 #------------DO NOT EDIT BELOW THIS LINE---------------------------------------------
+
+
 print('Importing arcpy, os, time, and subprocess libraries')
 import arcpy, os, subprocess, time
 print('Import Complete\n')
@@ -39,7 +48,7 @@ if __name__ == "__main__":
   
 # Open the file explorer to the directory
 print(f'opening {output_folder}')
-explorer_cmd = f'explorer /select,"{output_folder}"'
+explorer_cmd = f'explorer /select,"{os.path.join(output_folder,folder_name)}"'
 subprocess.run(explorer_cmd, shell=True)
 
 total_time_end = time.time()  # Record the end time for the entire process
