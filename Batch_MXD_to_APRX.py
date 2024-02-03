@@ -1,22 +1,26 @@
-# MXD to .aprx version 1
-# Python 3 - ArcGIS Pro 3.1
-# writen by Austin Beck
-# intended to be run in an arcgis pro notebook (not in the project that you are copying the files into(the aprx_file_path variable))
-# use just a new aprx with no exists maps/layouts instead
+# Created by Austin Beck | austin.beck@aecom.com
 
 # This script takes an input of a folder "Directory Path" and converts all mxds within that folder into an ArcGIS Pro Project (.aprx)
 
+# Intended to be run in an arcgis pro notebook (but not in the project/arpx that you are copying the files into(the aprx_file_path variable))
+# use just a blank aprx with no exists maps/layouts instead
 
 
-import arcpy
-import os
+#------------USER INPUTS-----------------------------------------------------
 
-
-# Provide the paths to the .aprx file and the directory containing .MXD files
-aprx_file_path = r"L:\DCS\Projects\Western Zirconium\GIS\Plant Area Monitoring\2023\Spring_2023\Pro\WZ_Spring_2023.aprx" # will create an aprx if it doesn't already exist
+# Base directory where MXDs are located
 directory_path = r"L:\DCS\Projects\Western Zirconium\GIS\Plant Area Monitoring\2023\Spring_2023"
 
+#Output Path for APRX - will create an APRX is this file doesn't already exist
+aprx_file_path = r"L:\DCS\Projects\Western Zirconium\GIS\Plant Area Monitoring\2023\Spring_2023\Pro\WZ_Spring_2023.aprx"
 
+#------------DO NOT EDIT BELOW THIS LINE---------------------------------------------
+
+
+print('Importing arcpy, os, and time libraries')
+import arcpy, os, time
+print('Import Complete\n')
+total_time_start = time.time()
 
 def create_aprx(aprx_file_path):
     # Create a new ArcGIS Pro project
@@ -95,4 +99,7 @@ if not os.path.exists(aprx_file_path):
 # Call the function to import the MXD files as layouts in the .aprx project
 import_mxd_to_aprx(aprx_file_path, directory_path)
 
-print("Done")
+total_time_end = time.time()  # Record the end time for the entire process
+total_duration = total_time_end - total_time_start
+
+print(f"Done!\nTotal time: {total_duration:.2f} seconds")
