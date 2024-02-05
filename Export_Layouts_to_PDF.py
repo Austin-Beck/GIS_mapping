@@ -31,7 +31,7 @@ if not APRX_path == '':
 else:
     project = arcpy.mp.ArcGISProject("CURRENT")
 
-for layout in project.listLayouts(f'{keyword}*'):
+for layout in project.listLayouts(f'*{keyword}*'):
     loop_start_time = time.time()
     pdf_name = f"{layout.name}{append_name}.pdf"
     pdf_path = os.path.join(pdf_export, pdf_name)
