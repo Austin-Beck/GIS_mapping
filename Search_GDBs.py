@@ -1,7 +1,7 @@
 # Created by Austin Beck | austin.beck@aecom.com
 # Intended to be run in ArcGIS Pro Notebook or Python Window
 
-# Searches base file directory and all subdirectories for File Geodatabases containing a keyword 
+# This script uses a keyword to search for a GDB featureclass within a directory and its subdirectories 
 
 #------------USER INPUTS---------------------------------------------------------------------
 root_directory = r"c:" # starting directory to search (all subdirectories will also be searched)
