@@ -17,6 +17,8 @@ arcpy.env.addOutputsToMap = False
 arcpy.env.workspace = arcpy.mp.ArcGISProject("CURRENT").defaultGeodatabase
 arcpy.env.overwriteOutput = True
 
+
+print(f'exporting shapefiles to GDB {arcpy.env.workspace} and adding/populating fields..')
 if arcpy.Exists(one_pct_poly):
     one_pct_bn = 'one_pct'
     arcpy.conversion.ExportFeatures(one_pct_poly, one_pct_bn)
@@ -56,18 +58,22 @@ def cleanup(fc_list, WA_name):
         
          # Smooth using PAEK with 25 feet tolerance
         smoothed = fc +'_smoothed'
+        print('  smothing feature class')
         arcpy.SmoothPolygon_cartography(fc, smoothed, "PAEK", "25 Feet")
         to_delete.append(smoothed)
 
         # Generalize with 0.5 ft
+        print('  generalizing feature class')
         arcpy.Generalize_edit(smoothed, "0.5 Feet")
 
         # Convert multipart to singlepart
+        print('  converting multiparts to single parts')
         single_part = fc + '_singlepart'
         arcpy.MultipartToSinglepart_management(smoothed, single_part)
         to_delete.append(single_part)
         
         # Delete features less than 2,000 sqft
+        print('  converting multiparts to single parts')
         with arcpy.da.UpdateCursor(single_part, ["SHAPE@"]) as cursor:
             for row in cursor:
                 if row[0].area < 2000:
@@ -79,13 +85,16 @@ def cleanup(fc_list, WA_name):
                                                   part_area_percent=0, part_option="CONTAINED_ONLY")
         to_delete.append(elim_poly)
     
+    
     final_merge = []
     if arcpy.Exists('one_pct_elim') and arcpy.Exists('two_pct_elim'):
+        print('erasing 100yr from 500yr..')
         two_pct_erase = 'two_pct_erased'
         arcpy.Erase_analysis('two_pct_elim', 'one_pct_elim', two_pct_erase)
         final_merge = [two_pct_erase]
         to_delete.append(two_pct_erase)
     if arcpy.Exists('FW_elim') and arcpy.Exists('one_pct_elim'):
+        print('erasing FW from 100yr..')
         one_pct_erase = 'one_pct_erased'
         arcpy.Erase_analysis('one_pct_elim', 'FW_elim',one_pct_erase)
         final_merge.append(one_pct_erase)
@@ -94,6 +103,7 @@ def cleanup(fc_list, WA_name):
     else:
         final_merge.append('one_pct_elim')
         
+    print('merging final dataset..')
     arcpy.management.Merge(final_merge, WA_name + '_final')     
         
     arcpy.management.DeleteField(WA_name+'_final',['FLD_ZONE','ZONE_SUBTY'], 'KEEP_FIELDS')
