@@ -64,7 +64,7 @@ def cleanup(fc_list, WA_name):
             print(f"{fc} not projected to feet. Quitting.")
             break
         else:
-            print(f"{fc} is projected to feet. Continuing...")
+            print(f"{fc} is projected to {spatial_ref.linearUnitName.lower()}. Continuing...")
         
         
          # Smooth using PAEK with 25 feet tolerance
