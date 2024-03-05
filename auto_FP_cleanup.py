@@ -2,11 +2,11 @@ import arcpy
 import os
 
 # Define the input parameters
-one_pct_poly = r"Z:\Denver-USDEN06\DCS\Projects\WTR\60699434_MT_DNRC_Richland_DFPR_Mod\500_Deliverables\503_Hydraulics\Powder_River_County\TLPR_A\Simulations\TLPR_A\Inundation Boundary (1% Value_0).shp"
-one_pct_zone = 'A'
-two_pct_poly = r"Z:\Denver-USDEN06\DCS\Projects\WTR\60699434_MT_DNRC_Richland_DFPR_Mod\500_Deliverables\503_Hydraulics\Powder_River_County\TLPR_A\Simulations\TLPR_A\Inundation Boundary (0.2% Value_0).shp"
-FW_poly = r""
-WA_name = "TLPR_A"  # Example value, replace with the actual name
+one_pct_poly = r".shp"
+one_pct_zone = 'AE' #AE or A
+two_pct_poly = r".shp"
+FW_poly = r".shp"
+WA_name = "Sand_Creek"  # Example value, replace with the actual name (no spaces/special characters) - this is used for the final fc name
 
 # Create empty list for fcs
 fc_list = []
@@ -53,8 +53,19 @@ if arcpy.Exists(FW_poly):
 def cleanup(fc_list, WA_name):
     to_delete = []
     for fc in fc_list:
+        
         to_delete.append(fc)
         print(f'working on {fc}...')
+        
+        
+        # Check spatial reference
+        spatial_ref = arcpy.Describe(fc).spatialReference
+        if spatial_ref.linearUnitName.lower() not in ['foot', 'international foot', 'survey foot']:
+            print(f"{fc} not projected to feet. Quitting.")
+            break
+        else:
+            print(f"{fc} is projected to feet. Continuing...")
+        
         
          # Smooth using PAEK with 25 feet tolerance
         smoothed = fc +'_smoothed'
@@ -73,7 +84,7 @@ def cleanup(fc_list, WA_name):
         to_delete.append(single_part)
         
         # Delete features less than 2,000 sqft
-        print('  converting multiparts to single parts')
+        print('  removing features less than 2000 feet')
         with arcpy.da.UpdateCursor(single_part, ["SHAPE@"]) as cursor:
             for row in cursor:
                 if row[0].area < 2000:
