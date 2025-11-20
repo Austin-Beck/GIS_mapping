@@ -1,0 +1,95 @@
+from arcgis.gis import GIS
+import json
+import copy
+# best to run this script from within agol or arcgis pro (while logged into your agol account)
+# Inputs
+webmap_id = 'ca7c5a409d9d49638808a3ba42aa4c4b'
+source_layer_name = 'February 25'  # Layer to copy form FROM
+target_layer_name = 'Outfalls (December 25)'  # Layer to copy form TO
+
+def copy_layer_form(webmap_id, source_layer_name, target_layer_name):
+    """
+    Copy form configuration from one layer to another in the same webmap.
+    
+    Parameters:
+    webmap_id (str): The item ID of the webmap
+    source_layer_name (str): Name of the layer to copy the form FROM
+    target_layer_name (str): Name of the layer to copy the form TO
+    """
+    try:
+        # Connect to ArcGIS Online using 'home'
+        gis = GIS('home')
+        print(f"Connected to: {gis.url}")
+        print(f"Logged in as: {gis.properties.user.username}")
+        
+        # Get the webmap item
+        print(f"\nRetrieving webmap with ID: {webmap_id}")
+        webmap_item = gis.content.get(webmap_id)
+        
+        if webmap_item is None:
+            print(f"Error: Could not find item with ID {webmap_id}")
+            return False
+        
+        # Get the webmap data
+        webmap_data = webmap_item.get_data()
+        
+        # Find the source and target layers
+        source_layer = None
+        target_layer = None
+        
+        print(f"\nSearching for layers in webmap...")
+        print(f"Available layers:")
+        
+        for layer in webmap_data.get('operationalLayers', []):
+            layer_title = layer.get('title', 'Unnamed')
+            print(f"  - {layer_title}")
+            
+            if layer_title == source_layer_name:
+                source_layer = layer
+            if layer_title == target_layer_name:
+                target_layer = layer
+        
+        # Check if both layers were found
+        if source_layer is None:
+            print(f"\nError: Source layer '{source_layer_name}' not found in webmap")
+            return False
+        
+        if target_layer is None:
+            print(f"\nError: Target layer '{target_layer_name}' not found in webmap")
+            return False
+        
+        print(f"\nFound source layer: {source_layer_name}")
+        print(f"Found target layer: {target_layer_name}")
+        
+        # Check if source layer has a form
+        if 'formInfo' not in source_layer:
+            print(f"\nError: Source layer '{source_layer_name}' does not have a form configured")
+            return False
+        
+        # Copy the form configuration
+        print(f"\nCopying form configuration...")
+        source_form = copy.deepcopy(source_layer['formInfo'])
+        target_layer['formInfo'] = source_form
+        
+        # Update the webmap
+        print(f"Updating webmap...")
+        update_result = webmap_item.update(data=json.dumps(webmap_data))
+        
+        if update_result:
+            print(f"\n✓ Success! Form copied from '{source_layer_name}' to '{target_layer_name}'")
+            print(f"Webmap updated: {webmap_item.homepage}")
+            return True
+        else:
+            print(f"\n✗ Failed to update webmap")
+            return False
+        
+    except Exception as e:
+        print(f"\nError copying form: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+if __name__ == "__main__":    
+    # Copy the form
+    copy_layer_form(webmap_id, source_layer_name, target_layer_name)
