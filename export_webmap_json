@@ -1,0 +1,78 @@
+from arcgis.gis import GIS
+import json
+import os
+
+# Input the webmap item ID
+webmap_id = 'aeca81d68fcb41a0a15fe6f7a7b6a263'
+
+# Input the output path
+output = r'C:\adb_ble_outputs'
+
+def export_webmap_json(item_id, output_path=None):
+    """
+    Export a webmap's JSON from ArcGIS Online.
+    
+    Parameters:
+    item_id (str): The item ID of the webmap
+    output_path (str): Optional path to save the JSON file. 
+                       If None, saves to current directory with item_id as filename.
+                       Can be a directory or full file path.
+    """
+    try:
+        # Connect to ArcGIS Online using 'home'
+        gis = GIS('home')
+        print(f"Connected to: {gis.url}")
+        print(f"Logged in as: {gis.properties.user.username}")
+        
+        # Get the webmap item
+        print(f"\nRetrieving webmap with ID: {item_id}")
+        webmap_item = gis.content.get(item_id)
+        
+        if webmap_item is None:
+            print(f"Error: Could not find item with ID {item_id}")
+            return None
+        
+        if webmap_item.type != 'Web Map':
+            print(f"Warning: Item is of type '{webmap_item.type}', not 'Web Map'")
+        
+        # Get the webmap data (JSON)
+        webmap_json = webmap_item.get_data()
+        
+        # Determine output file path
+        if output_path is None:
+            output_file = f"{item_id}_webmap.json"
+        elif os.path.isdir(output_path):
+            # If it's a directory, create filename in that directory
+            output_file = os.path.join(output_path, f"{item_id}_webmap.json")
+        else:
+            # Use as full file path
+            output_file = output_path
+        
+        # Ensure the output path has .json extension
+        if not output_file.endswith('.json'):
+            output_file += '.json'
+        
+        # Create directory if it doesn't exist
+        output_dir = os.path.dirname(output_file)
+        if output_dir and not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        
+        # Write JSON to file
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(webmap_json, f, indent=2, ensure_ascii=False)
+        
+        print(f"\nWebmap JSON successfully exported!")
+        print(f"Title: {webmap_item.title}")
+        print(f"Output: {os.path.abspath(output_file)}")
+        
+        return webmap_json
+        
+    except Exception as e:
+        print(f"Error exporting webmap: {str(e)}")
+        return None
+
+
+if __name__ == "__main__":
+    
+    # Export the webmap
+    export_webmap_json(webmap_id, output)
